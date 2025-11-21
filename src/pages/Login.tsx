@@ -15,7 +15,6 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/store";
 
-// قائمة المحافظات المصرية (كمثال)
 const governorates = [
   "القاهرة",
   "الجيزة",
@@ -46,20 +45,17 @@ const governorates = [
   "جنوب سيناء",
 ];
 
-// واجهة حقول تسجيل الدخول الموسعة
 interface LoginFields {
   username: string;
   email: string;
   password: string;
-  // حقول البيانات الإضافية
   phone: string;
   city: string;
   address: string;
   dateOfBirth: string;
-  confirmPassword: string; // تم إضافته ليعمل validation
+  confirmPassword: string;
 }
 
-// تعديل واجهة المستخدم في الـ store لتشمل جميع الحقول
 interface ExtendedUser {
   name: string;
   email: string;
@@ -72,22 +68,19 @@ interface ExtendedUser {
 const Login = () => {
   const [showPass, setShowPass] = useState(false);
 
-  // setUser في الـ store يجب أن يكون محدثاً ليقبل ExtendedUser
   const setUser = useAuthStore((state) => state.setUser);
   const navigate = useNavigate();
 
   const {
     register,
     handleSubmit,
-    watch, // تم إضافة watch
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<LoginFields>();
 
-  // لمطابقة كلمة المرور
   const password = watch("password", "");
 
   const onSubmit = async (data: LoginFields) => {
-    // إنشاء كائن المستخدم بجميع التفاصيل الإضافية (للعرض في البروفايل)
     const user: ExtendedUser = {
       name: data.username,
       email: data.email,
@@ -99,7 +92,6 @@ const Login = () => {
 
     setUser(user);
 
-    // محاكاة لعملية تسجيل الدخول
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     navigate("/");
@@ -111,7 +103,6 @@ const Login = () => {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        // تم توسيع حجم النموذج ليناسب الحقول الجديدة
         className="bg-white p-8 md:p-12 rounded-3xl shadow-2xl shadow-gray-300/60 w-full max-w-3xl border-t-8 border-orange-600"
       >
         <div className="text-center mb-8">

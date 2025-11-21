@@ -6,7 +6,7 @@ import {
   FaMapMarkerAlt,
   FaWrench,
   FaCommentDots,
-  FaUserCog, // أيقونة العامل
+  FaUserCog,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -15,7 +15,6 @@ import { workers } from "../database/db";
 import { useAuthStore, type Form as FormType } from "../store/store";
 import { v4 as uuidv4 } from "uuid";
 
-// تعريف الواجهة لتجنب أي مشاكل Typescript
 interface FormData {
   name: string;
   phone: string;
@@ -33,7 +32,6 @@ const Form = () => {
   const [searchParams] = useSearchParams();
   const workerIdParam = searchParams.get("workerId");
 
-  // الحل: تحديد العامل المحدد من الرابط وتحويل ID لـ Number
   const selectedWorker = workers.find((w) => w.id === Number(workerIdParam));
 
   // ** 1. تحديد القيم الافتراضية **
@@ -46,7 +44,6 @@ const Form = () => {
     watch,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
-    // ** 2. تمرير القيم الافتراضية لـ useForm **
     defaultValues: {
       service: defaultService,
       workerId: defaultWorkerId,
