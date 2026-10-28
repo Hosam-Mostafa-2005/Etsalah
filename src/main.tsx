@@ -3,21 +3,29 @@ import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "./index.css";
-import Form from "./pages/Form.tsx";
-import MyOrders from "./pages/MyOrders.tsx";
-import Profile from "./pages/Profile.tsx";
-import Services from "./pages/Services.tsx";
-import Home from "./pages/Home.tsx";
-import RootLayout from "./RootLayout.tsx";
-import WorkerProfile from "./components/WorkerProfile.tsx";
-import Error from "./pages/Error.tsx";
-import Login from "./pages/Login.tsx";
-import WorkersList from "./components/WorkersList.tsx";
-import Contact from "./components/Contact.tsx";
-import Register from "./pages/Register.tsx";
-import Faq from "./pages/Faq.tsx";
+import Form from "./pages/Form";
+import MyOrders from "./pages/MyOrders";
+import Profile from "./pages/Profile";
+import Services from "./pages/Services";
+import Home from "./pages/Home";
+import RootLayout from "./RootLayout";
+import WorkerProfile from "./components/WorkerProfile";
+import Error from "./pages/Error";
+import Login from "./pages/Login";
+import WorkersList from "./components/WorkersList";
+import Contact from "./components/Contact";
+import Register from "./pages/Register";
+import Faq from "./pages/Faq";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      staleTime: 1000 * 60 * 2, // 2 minutes cache
+      retry: 1,
+    },
+  },
+});
 
 const rootElement = document.getElementById("root");
 

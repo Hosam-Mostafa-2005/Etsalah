@@ -1,418 +1,208 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { Link, useNavigate } from "react-router-dom";
 import {
-  FaSignInAlt,
   FaEnvelope,
   FaLock,
-  FaUser,
-  FaPhone,
-  FaMapMarkerAlt,
-  FaCalendarAlt,
-  FaHome,
+  FaEye,
+  FaEyeSlash,
+  FaWrench,
+  FaArrowLeft,
 } from "react-icons/fa";
 import { motion } from "framer-motion";
-import { useState } from "react";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { authApi } from "../api/auth";
+import type { LoginPayload } from "../api/auth";
 import { useAuthStore } from "../store/store";
 
-const governorates = [
-  "القاهرة",
-  "الجيزة",
-  "الإسكندرية",
-  "الدقهلية",
-  "الشرقية",
-  "الغربية",
-  "المنوفية",
-  "القليوبية",
-  "البحيرة",
-  "كفر الشيخ",
-  "دمياط",
-  "بورسعيد",
-  "الإسماعيلية",
-  "السويس",
-  "الفيوم",
-  "بني سويف",
-  "المنيا",
-  "أسيوط",
-  "سوهاج",
-  "قنا",
-  "الأقصر",
-  "أسوان",
-  "البحر الأحمر",
-  "الوادي الجديد",
-  "مطروح",
-  "شمال سيناء",
-  "جنوب سيناء",
-];
-
-interface LoginFields {
-  username: string;
-  email: string;
-  password: string;
-  phone: string;
-  city: string;
-  address: string;
-  dateOfBirth: string;
-  confirmPassword: string;
-}
-
-interface ExtendedUser {
-  name: string;
-  email: string;
-  phone: string;
-  city: string;
-  address: string;
-  dateOfBirth: string;
-}
-
 const Login = () => {
-  const [showPass, setShowPass] = useState(false);
-
-  const setUser = useAuthStore((state) => state.setUser);
+  const [showPassword, setShowPassword] = useState(false);
+  const [serverError, setServerError] = useState("");
+  const setAuth = useAuthStore((state) => state.setAuth);
+  const showToast = useAuthStore((state) => state.showToast);
   const navigate = useNavigate();
 
   const {
     register,
     handleSubmit,
-    watch,
+    setValue,
     formState: { errors, isSubmitting },
-  } = useForm<LoginFields>();
+  } = useForm<LoginPayload>({
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-  const password = watch("password", "");
+  const onSubmit = async (data: LoginPayload) => {
+    setServerError("");
+    try {
+      const response = await authApi.login(data);
+      setAuth(response.user, response.token);
+      showToast(response.message || "تم تسجيل الدخول بنجاح!", "success");
+      navigate("/");
+    } catch (err: unknown) {
+      setServerError(
+        err instanceof Error
+          ? err.message
+          : "فشل تسجيل الدخول، يرجى التأكد من البريد وكلمة المرور"
+      );
+    }
+  };
 
-  const onSubmit = async (data: LoginFields) => {
-    const user: ExtendedUser = {
-      name: data.username,
-      email: data.email,
-      phone: data.phone,
-      city: data.city,
-      address: data.address,
-      dateOfBirth: data.dateOfBirth,
-    };
-
-    setUser(user);
-
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    navigate("/");
+  // One-click demo credentials filler
+  const handleFillDemo = (type: "customer" | "admin") => {
+    if (type === "customer") {
+      setValue("email", "customer@etsalah.com");
+      setValue("password", "password123");
+    } else {
+      setValue("email", "admin@etsalah.com");
+      setValue("password", "admin123");
+    }
+    setServerError("");
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen flex items-center justify-center p-6">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 sm:p-6">
       <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="bg-white p-8 md:p-12 rounded-3xl shadow-2xl shadow-gray-300/60 w-full max-w-3xl border-t-8 border-orange-600"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+        className="bg-white rounded-3xl shadow-xl border border-slate-100 max-w-md w-full overflow-hidden"
       >
-        <div className="text-center mb-8">
-          <FaSignInAlt className="text-orange-600 text-6xl mx-auto mb-4" />
-          <h1 className="text-4xl font-extrabold text-gray-900 tracking-wide">
-            تسجيل الدخول / إكمال البيانات
-          </h1>
-          <p className="text-gray-500 mt-2">يرجى إدخال بياناتك للمتابعة.</p>
+        {/* Header */}
+        <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-8 text-center relative">
+          <Link
+            to="/"
+            className="absolute top-4 right-4 text-xs font-bold text-slate-400 hover:text-white flex items-center gap-1 transition"
+          >
+            <span>الرئيسية</span>
+            <FaArrowLeft className="text-[10px]" />
+          </Link>
+
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-orange-600 to-amber-500 text-white flex items-center justify-center mx-auto mb-3 shadow-md shadow-orange-500/30">
+            <FaWrench className="text-2xl -rotate-45" />
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black">تسجيل الدخول</h1>
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+            مرحباً بك مجدداً في منصة اتصلح
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* ----------------- الصف الأول: الأساسيات ----------------- */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* حقل اسم المستخدم */}
-            <div>
-              <label
-                htmlFor="username"
-                className="block text-gray-700 font-semibold mb-2 text-right"
-              >
-                اسم المستخدم
-              </label>
-              <div className="relative">
-                <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-                  <FaUser />
-                </span>
-                <input
-                  type="text"
-                  id="username"
-                  {...register("username", {
-                    required: "اسم المستخدم مطلوب",
-                    minLength: { value: 3, message: "يجب أن لا يقل عن 3 أحرف" },
-                  })}
-                  className={`w-full px-5 py-3 pr-10 rounded-xl bg-gray-50 border ${
-                    errors.username ? "border-red-500" : "border-gray-300"
-                  } focus:outline-none focus:ring-2 focus:ring-orange-500 text-right`}
-                  placeholder="ادخل اسم المستخدم"
-                />
-              </div>
-              {errors.username && (
-                <p className="text-red-500 text-sm mt-1 text-right">
-                  {errors.username.message as string}
-                </p>
-              )}
-            </div>
+        {/* Demo Fast Login Bar */}
+        <div className="bg-orange-50/80 border-b border-orange-100 p-3.5 text-center">
+          <p className="text-xs font-bold text-orange-900 mb-2">
+            ⚡ تجربة سريعة بنقرة واحدة (حساب تجريبي معتمد):
+          </p>
+          <div className="flex items-center justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => handleFillDemo("customer")}
+              className="px-3 py-1.5 rounded-lg bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs transition shadow-xs"
+            >
+              دخول عميل تجريبي
+            </button>
+            <button
+              type="button"
+              onClick={() => handleFillDemo("admin")}
+              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-extrabold text-xs transition shadow-xs"
+            >
+              دخول كمدير
+            </button>
+          </div>
+        </div>
 
-            {/* حقل البريد الإلكتروني */}
+        {/* Form */}
+        <div className="p-6 sm:p-8 space-y-6">
+          {serverError && (
+            <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold text-center">
+              {serverError}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            {/* Email Field */}
             <div>
-              <label
-                htmlFor="email"
-                className="block text-gray-700 font-semibold mb-2 text-right"
-              >
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
                 البريد الإلكتروني
               </label>
               <div className="relative">
-                <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-                  <FaEnvelope />
-                </span>
                 <input
                   type="email"
-                  id="email"
+                  placeholder="name@example.com"
                   {...register("email", {
-                    required: "البريد الإلكتروني مطلوب",
-                    pattern: { value: /^\S+@\S+$/i, message: "صيغة غير صحيحة" },
+                    required: "يرجى إدخال البريد الإلكتروني",
+                    pattern: {
+                      value: /\S+@\S+\.\S+/,
+                      message: "صيغة البريد الإلكتروني غير صحيحة",
+                    },
                   })}
-                  className={`w-full px-5 py-3 pr-10 rounded-xl bg-gray-50 border ${
-                    errors.email ? "border-red-500" : "border-gray-300"
-                  } focus:outline-none focus:ring-2 focus:ring-orange-500 text-right`}
-                  placeholder="example@mail.com"
+                  className="w-full px-4 py-3 pr-10 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-semibold focus:outline-none focus:border-orange-500 dir-ltr text-right transition"
                 />
+                <FaEnvelope className="absolute right-3.5 top-4 text-slate-400 text-sm pointer-events-none" />
               </div>
               {errors.email && (
-                <p className="text-red-500 text-sm mt-1 text-right">
-                  {errors.email.message as string}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* ----------------- الصف الثاني: التواصل والمحافظة ----------------- */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* حقل رقم الهاتف */}
-            <div>
-              <label
-                htmlFor="phone"
-                className="block text-gray-700 font-semibold mb-2 text-right"
-              >
-                رقم الهاتف
-              </label>
-              <div className="relative">
-                <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-                  <FaPhone />
-                </span>
-                <input
-                  type="tel"
-                  id="phone"
-                  {...register("phone", { required: "رقم الهاتف مطلوب" })}
-                  className={`w-full px-5 py-3 pr-10 rounded-xl bg-gray-50 border ${
-                    errors.phone ? "border-red-500" : "border-gray-300"
-                  } focus:outline-none focus:ring-2 focus:ring-orange-500 text-right`}
-                  placeholder="مثال: 01xxxxxxxxx"
-                />
-              </div>
-              {errors.phone && (
-                <p className="text-red-500 text-sm mt-1 text-right">
-                  {errors.phone.message as string}
+                <p className="text-rose-500 text-xs mt-1 font-bold">
+                  {errors.email.message}
                 </p>
               )}
             </div>
 
-            {/* حقل المحافظة (Select) */}
+            {/* Password Field */}
             <div>
-              <label
-                htmlFor="city"
-                className="block text-gray-700 font-semibold mb-2 text-right"
-              >
-                المحافظة
-              </label>
-              <div className="relative">
-                <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-                  <FaMapMarkerAlt />
-                </span>
-                <select
-                  id="city"
-                  {...register("city", { required: "المحافظة مطلوبة" })}
-                  className={`w-full px-5 py-3 pr-10 rounded-xl bg-gray-50 border appearance-none ${
-                    errors.city ? "border-red-500" : "border-gray-300"
-                  } focus:outline-none focus:ring-2 focus:ring-orange-500 text-right`}
-                >
-                  <option value="">-- اختر محافظتك --</option>
-                  {governorates.map((city) => (
-                    <option key={city} value={city}>
-                      {city}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              {errors.city && (
-                <p className="text-red-500 text-sm mt-1 text-right">
-                  {errors.city.message as string}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* ----------------- الصف الثالث: العنوان وتاريخ الميلاد ----------------- */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* حقل العنوان بالتفصيل */}
-            <div>
-              <label
-                htmlFor="address"
-                className="block text-gray-700 font-semibold mb-2 text-right"
-              >
-                العنوان بالتفصيل
-              </label>
-              <div className="relative">
-                <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-                  <FaHome />
-                </span>
-                <input
-                  type="text"
-                  id="address"
-                  {...register("address", { required: "العنوان مطلوب" })}
-                  className={`w-full px-5 py-3 pr-10 rounded-xl bg-gray-50 border ${
-                    errors.address ? "border-red-500" : "border-gray-300"
-                  } focus:outline-none focus:ring-2 focus:ring-orange-500 text-right`}
-                  placeholder="مثال: شقة 5، عمارة 12"
-                />
-              </div>
-              {errors.address && (
-                <p className="text-red-500 text-sm mt-1 text-right">
-                  {errors.address.message as string}
-                </p>
-              )}
-            </div>
-
-            {/* حقل تاريخ الميلاد */}
-            <div>
-              <label
-                htmlFor="dateOfBirth"
-                className="block text-gray-700 font-semibold mb-2 text-right"
-              >
-                تاريخ الميلاد
-              </label>
-              <div className="relative">
-                <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-                  <FaCalendarAlt />
-                </span>
-                <input
-                  type="date"
-                  id="dateOfBirth"
-                  {...register("dateOfBirth", {
-                    required: "تاريخ الميلاد مطلوب",
-                  })}
-                  className={`w-full px-5 py-3 pr-10 rounded-xl bg-gray-50 border ${
-                    errors.dateOfBirth ? "border-red-500" : "border-gray-300"
-                  } focus:outline-none focus:ring-2 focus:ring-orange-500 text-right`}
-                  placeholder="YYYY-MM-DD"
-                />
-              </div>
-              {errors.dateOfBirth && (
-                <p className="text-red-500 text-sm mt-1 text-right">
-                  {errors.dateOfBirth.message as string}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* ----------------- الصف الرابع: كلمات المرور ----------------- */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* حقل كلمة المرور */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-gray-700 font-semibold mb-2 text-right"
-              >
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
                 كلمة المرور
               </label>
               <div className="relative">
-                <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-                  <FaLock />
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setShowPass((prev) => !prev)}
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 p-1 focus:outline-none"
-                  aria-label="Toggle password visibility"
-                >
-                  {showPass ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
-                </button>
                 <input
-                  type={showPass ? "text" : "password"}
-                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
                   {...register("password", {
-                    required: "كلمة المرور مطلوبة",
-                    minLength: { value: 6, message: "يجب أن لا تقل عن 6 أحرف" },
-                    pattern: {
-                      value: /^(?=.*[A-Z])(?=.*\d).+$/,
-                      message: "تتطلب حرف كبير ورقم واحد على الأقل",
+                    required: "يرجى إدخال كلمة المرور",
+                    minLength: {
+                      value: 6,
+                      message: "كلمة المرور يجب أن لا تقل عن 6 أحرف",
                     },
                   })}
-                  className={`w-full px-5 py-3 pr-10 pl-10 rounded-xl bg-gray-50 border ${
-                    errors.password ? "border-red-500" : "border-gray-300"
-                  } focus:outline-none focus:ring-2 focus:ring-orange-500 text-right`}
-                  placeholder="ادخل كلمة المرور"
+                  className="w-full px-4 py-3 pr-10 pl-10 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-semibold focus:outline-none focus:border-orange-500 dir-ltr text-right transition"
                 />
-              </div>
-              {errors.password && (
-                <p className="text-red-500 text-sm mt-1 text-right">
-                  {errors.password.message as string}
-                </p>
-              )}
-            </div>
-
-            {/* حقل تأكيد كلمة المرور */}
-            <div>
-              <label
-                htmlFor="confirmPassword"
-                className="block text-gray-700 font-semibold mb-2 text-right"
-              >
-                تأكيد كلمة المرور
-              </label>
-              <div className="relative">
-                <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-                  <FaLock />
-                </span>
+                <FaLock className="absolute right-3.5 top-4 text-slate-400 text-sm pointer-events-none" />
                 <button
                   type="button"
-                  onClick={() => setShowPass((prev) => !prev)}
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 p-1 focus:outline-none"
-                  aria-label="Toggle confirm password visibility"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute left-3.5 top-4 text-slate-400 hover:text-slate-600 text-sm"
+                  aria-label="إظهار/إخفاء كلمة المرور"
                 >
-                  {showPass ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
                 </button>
-                <input
-                  type={showPass ? "text" : "password"}
-                  id="confirmPassword"
-                  // Note: Since we are using showPass for both fields for simplicity, the original logic using showConfirmPass is removed.
-                  {...register("confirmPassword", {
-                    required: "تأكيد كلمة المرور مطلوب",
-                    validate: (value) =>
-                      value === password || "كلمتا المرور غير متطابقتين",
-                  })}
-                  className={`w-full px-5 py-3 pr-10 pl-10 rounded-xl bg-gray-50 border ${
-                    errors.confirmPassword
-                      ? "border-red-500"
-                      : "border-gray-300"
-                  } focus:outline-none focus:ring-2 focus:ring-orange-500 text-right`}
-                  placeholder="أعد إدخال كلمة المرور"
-                />
               </div>
-              {errors.confirmPassword && (
-                <p className="text-red-500 text-sm mt-1 text-right">
-                  {errors.confirmPassword.message as string}
+              {errors.password && (
+                <p className="text-rose-500 text-xs mt-1 font-bold">
+                  {errors.password.message}
                 </p>
               )}
             </div>
-          </div>
 
-          {/* زر تسجيل الدخول */}
-          <motion.button
-            type="submit"
-            disabled={isSubmitting}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.98 }}
-            className="w-full bg-orange-600 text-white font-bold text-lg py-4 mt-6 rounded-xl 
-                       hover:bg-orange-700 transition duration-300 shadow-lg shadow-orange-500/50 disabled:bg-gray-400 disabled:shadow-none"
-          >
-            {isSubmitting ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
-          </motion.button>
-        </form>
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-3.5 rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-black text-sm shadow-md shadow-orange-500/25 transition disabled:opacity-50"
+            >
+              {isSubmitting ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
+            </button>
+          </form>
+
+          {/* Register Footer Link */}
+          <div className="pt-4 border-t border-slate-100 text-center text-xs text-slate-600">
+            <span>ليس لديك حساب بعد؟ </span>
+            <Link
+              to="/register"
+              className="font-bold text-orange-600 hover:text-orange-700 hover:underline"
+            >
+              إنشاء حساب جديد الآن
+            </Link>
+          </div>
+        </div>
       </motion.div>
     </div>
   );

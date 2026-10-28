@@ -1,44 +1,45 @@
-import { Link } from "react-router-dom";
-import { FaExclamationTriangle, FaHome } from "react-icons/fa";
-import { motion } from "framer-motion";
+import { Link, useRouteError } from "react-router-dom";
+import { FaWrench, FaHome } from "react-icons/fa";
 
 const Error = () => {
+  const error = useRouteError() as { statusText?: string; message?: string } | null;
+
   return (
-    <div className="bg-gray-900 min-h-screen flex flex-col items-center justify-center p-6 text-white">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, type: "spring", stiffness: 120 }}
-        className="text-center"
-      >
-        <FaExclamationTriangle className="text-orange-500 text-8xl md:text-9xl mb-6 mx-auto animate-pulse" />
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 sm:p-6 text-center">
+      <div className="bg-white rounded-3xl p-8 sm:p-12 max-w-lg w-full border border-slate-100 shadow-xl space-y-6">
+        <div className="w-20 h-20 rounded-3xl bg-orange-100 text-orange-600 flex items-center justify-center mx-auto text-4xl shadow-sm">
+          <FaWrench className="-rotate-45" />
+        </div>
 
-        <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-4">
-          !عذراً
-        </h1>
+        <div>
+          <h1 className="text-4xl font-black text-slate-900 mb-2">404</h1>
+          <h2 className="text-xl font-bold text-slate-800">
+            الصفحة المطلوبة غير موجودة
+          </h2>
+          <p className="text-slate-500 text-xs sm:text-sm mt-2 leading-relaxed">
+            {error?.statusText ||
+              error?.message ||
+              "عذراً، الرابط الذي تحاول الوصول إليه غير موجود أو تم نقله."}
+          </p>
+        </div>
 
-        <p className="text-lg md:text-xl font-medium text-gray-400 max-w-lg mx-auto mb-8">
-          يبدو أن الصفحة التي تبحث عنها غير موجودة. قد تكون الرابط غير صحيح أو
-          الصفحة تم إزالتها.
-        </p>
-
-        <Link to="/">
-          <motion.button
-            whileHover={{
-              scale: 1.05,
-              boxShadow: "0 0 20px rgba(249, 115, 22, 0.5)",
-            }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-orange-600 text-white font-bold text-lg px-8 py-4 rounded-full 
-                       hover:bg-orange-700 transition duration-300 transform"
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+          <Link
+            to="/"
+            className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-black text-sm shadow-md shadow-orange-500/25 transition flex items-center justify-center gap-2"
           >
-            <div className="flex items-center gap-3">
-              <FaHome size={20} />
-              العودة للصفحة الرئيسية
-            </div>
-          </motion.button>
-        </Link>
-      </motion.div>
+            <FaHome />
+            <span>العودة للرئيسية</span>
+          </Link>
+
+          <Link
+            to="/services"
+            className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition"
+          >
+            تصفح الخدمات
+          </Link>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,116 +1,134 @@
-import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   FaBolt,
   FaHammer,
   FaFaucet,
   FaGlassWhiskey,
   FaSnowflake,
-} from "react-icons/fa"; // أيقونات جديدة للخدمات
+  FaArrowLeft,
+  FaUsers,
+  FaWrench,
+} from "react-icons/fa";
+import { useCategories } from "../hooks/useQueries";
 
-const categories = [
-  {
-    name: "مسؤولين الكهرباء",
-    id: "electrician",
-    icon: (
-      <FaBolt
-        size={40}
-        className="text-yellow-500 group-hover:text-white transition"
-      />
-    ),
-  },
-  {
-    name: "مسؤولين النجارة",
-    id: "carpenter",
-    icon: (
-      <FaHammer
-        size={40}
-        className="text-yellow-800 group-hover:text-white transition"
-      />
-    ),
-  },
-  {
-    name: "مسؤولين السباكة",
-    id: "plumber",
-    icon: (
-      <FaFaucet
-        size={40}
-        className="text-blue-500 group-hover:text-white transition"
-      />
-    ),
-  },
-  {
-    name: "مسؤولين الزجاج",
-    id: "glass",
-    icon: (
-      <FaGlassWhiskey
-        size={40}
-        className="text-gray-400 group-hover:text-white transition"
-      />
-    ),
-  },
-  {
-    name: "مسؤولين التكييف",
-    id: "ac",
-    icon: (
-      <FaSnowflake
-        size={40}
-        className="text-cyan-500 group-hover:text-white transition"
-      />
-    ),
-  },
-];
+const categoryIconMap: Record<string, React.ReactNode> = {
+  ac: <FaSnowflake className="text-3xl text-cyan-500" />,
+  electrician: <FaBolt className="text-3xl text-amber-500" />,
+  plumber: <FaFaucet className="text-3xl text-blue-500" />,
+  carpenter: <FaHammer className="text-3xl text-amber-700" />,
+  glass: <FaGlassWhiskey className="text-3xl text-slate-500" />,
+};
 
 const Services = () => {
-  return (
-    <div className="bg-gray-50 min-h-screen overflow-x-hidden pt-28">
-      {" "}
-      {/* تم إضافة padding علوي لتجنب التداخل مع الـ NavBar */}
-      {/* ================= HERO SECTION للخدمات ================= */}
-      <motion.div
-        initial={{ opacity: 0, y: -50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="text-center mb-16"
-      >
-        <h1 className="text-5xl md:text-6xl font-black text-gray-800 tracking-wide mb-4">
-          اكتشف <span className="text-orange-600">خدماتنا</span>
-        </h1>
-        <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
-          اختر الفئة التي تحتاجها وسنوفر لك أفضل الخبراء في مجالك. جودة، سرعة،
-          وثقة.
-        </p>
-      </motion.div>
-      {/* ================= CATEGORIES GRID ================= */}
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.2 }}
-        className="max-w-7xl mx-auto px-6"
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center">
-          {categories.map((category, index) => (
-            <Link
-              key={index}
-              to={`/services/${encodeURIComponent(category.id)}`}
-              className="w-full max-w-sm h-64 bg-gray-900 shadow-2xl rounded-2xl flex flex-col items-center justify-center p-6 
-                                       text-2xl font-black text-white hover:bg-orange-600 hover:scale-105 
-                                       transition-all duration-500 group relative border-b-4 border-orange-600"
-            >
-              <motion.div
-                initial={{ scale: 0.8 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 0.3, delay: 0.2 + index * 0.1 }}
-                className="mb-4"
-              >
-                {category.icon}
-              </motion.div>
+  const { data: categories, isLoading, isError } = useCategories();
 
-              <span className="text-center">{category.name}</span>
-            </Link>
-          ))}
+  return (
+    <div className="py-12 sm:py-16 bg-slate-50 min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header Section */}
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-100 text-orange-700 font-bold text-xs mb-3">
+            <FaWrench />
+            <span>خدمات صيانة شاملة ومضمونة</span>
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">
+            استكشف <span className="text-orange-600">خدمات الصيانة</span>
+          </h1>
+          <p className="text-slate-600 text-base sm:text-lg mt-3 leading-relaxed">
+            اختر التخصص الذي ترغب في صيانته وتعرف على قائمة الفنيين المحترفين في
+            محافظتك مع إمكانية الحجز المباشر بالموعد المناسب.
+          </p>
         </div>
-      </motion.div>
+
+        {/* Loading State */}
+        {isLoading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div
+                key={i}
+                className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm animate-pulse space-y-4"
+              >
+                <div className="w-16 h-16 rounded-2xl bg-slate-200"></div>
+                <div className="h-6 bg-slate-200 rounded-md w-1/2"></div>
+                <div className="h-4 bg-slate-200 rounded-md w-full"></div>
+                <div className="h-4 bg-slate-200 rounded-md w-3/4"></div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Error State */}
+        {isError && (
+          <div className="text-center py-16 bg-white rounded-3xl border border-rose-100 p-8 max-w-lg mx-auto">
+            <p className="text-rose-600 font-bold mb-4">
+              تعذر تحميل بيانات الخدمات من الخادم حالياً.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-2.5 rounded-xl bg-slate-900 text-white font-bold text-sm"
+            >
+              إعادة المحاولة
+            </button>
+          </div>
+        )}
+
+        {/* Categories Grid */}
+        {categories && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {categories.map((cat, index) => (
+              <motion.div
+                key={cat._id || cat.key}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.08 }}
+                className="group bg-white rounded-3xl p-8 border border-slate-100 shadow-md hover:shadow-xl hover:border-orange-200 transition-all duration-300 flex flex-col justify-between"
+              >
+                <div>
+                  {/* Top Icon & Count */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="w-16 h-16 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:scale-110 group-hover:bg-orange-50 transition-all duration-300 shadow-xs">
+                      {categoryIconMap[cat.key] || <FaWrench className="text-3xl text-orange-600" />}
+                    </div>
+
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full">
+                      <FaUsers className="text-orange-500" />
+                      <span>{cat.techniciansCount || 10} فني معتمد</span>
+                    </div>
+                  </div>
+
+                  {/* Title & Desc */}
+                  <h3 className="text-2xl font-black text-slate-900 group-hover:text-orange-600 transition mb-2">
+                    {cat.nameAr}
+                  </h3>
+                  <p className="text-slate-600 text-sm leading-relaxed mb-6">
+                    {cat.description ||
+                      "صيانة وتصليح احترافي بأعلى معايير الأمان وضمان الجودة المعتمد."}
+                  </p>
+                </div>
+
+                {/* Actions */}
+                <div className="pt-6 border-t border-slate-100 flex items-center gap-3">
+                  <Link
+                    to={`/services/${cat.key}`}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-slate-900 hover:bg-orange-600 text-white font-black text-xs sm:text-sm shadow-sm transition-all"
+                  >
+                    <span>عرض الفنيين المتاحين</span>
+                    <FaArrowLeft className="text-xs" />
+                  </Link>
+
+                  <Link
+                    to={`/form?service=${cat.key}`}
+                    className="px-4 py-3 rounded-2xl bg-orange-50 text-orange-600 hover:bg-orange-100 font-extrabold text-xs sm:text-sm transition"
+                  >
+                    طلب فوري
+                  </Link>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
